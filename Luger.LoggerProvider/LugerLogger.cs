@@ -2,10 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace Luger.LoggerProvider
 {
     using Label = KeyValuePair<string, string>;
+
+    internal record SerializableException(string Message, string? Trace, SerializableException? InnerException);
 
     internal class LugerLogger : ILogger
     {
@@ -32,7 +35,7 @@ namespace Luger.LoggerProvider
 
         public bool IsEnabled(LogLevel logLevel) => true;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception,
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
             Func<TState, Exception, string> formatter)
         {
             IEnumerable<object> allLabels = scopes;
@@ -42,25 +45,33 @@ namespace Luger.LoggerProvider
             }
 
             var stringLabels = CreateLogLabels(allLabels);
-            
+
             var postableLabels = new Dictionary<string, object>(
                 stringLabels.Select(l => KeyValuePair.Create(l.Key, l.Value as object))
             );
-            if (!string.IsNullOrEmpty(category)) postableLabels["category"] = category;
-            
+
+            if (exception is not null)
+            {
+                postableLabels["@exception"] = JsonSerializer.Serialize(MapException(exception));
+            }
+
+            if (!string.IsNullOrEmpty(category)) postableLabels["@category"] = category;
+
             batchPoster.AddLog(new LogRecord
             {
                 Level = logLevel,
-                Message = formatter(state, exception),
+                Message = formatter(state, exception!),
                 Labels = postableLabels
             });
         }
 
         private IEnumerable<Label> CreateLogLabels(IEnumerable<object> states)
         {
-            return states.SelectMany(ExtractLabelsFromState)
-                .Select(NormalizeLabel)
-                .Where(l => !UndesiredLabels.Contains(l.Key));
+            return states.SelectMany(ExtractLabelsFromState) // extract
+                .Select(NormalizeLabel) // map
+                .Where(l => !UndesiredLabels.Contains(l.Key)) // filter
+                .GroupBy(l => l.Key) // deduplicate 
+                .Select(g => g.First());
         }
 
         private IEnumerable<Label> ExtractLabelsFromState(object? state)
@@ -83,6 +94,15 @@ namespace Luger.LoggerProvider
             var value = (l.Value ?? string.Empty);
 
             return KeyValuePair.Create(key, value);
+        }
+
+        private SerializableException MapException(Exception ex)
+        {
+            return new SerializableException(
+                Message: ex.Message,
+                Trace: ex.StackTrace,
+                InnerException: ex.InnerException is not null ? MapException(ex.InnerException) : null
+            );
         }
     }
 }

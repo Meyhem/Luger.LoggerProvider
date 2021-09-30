@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <PackageVersion>0.0.2</PackageVersion>
+    <PackageVersion>0.0.4</PackageVersion>
     <Title>Luger.LoggerProvider</Title>
     <Authors>Meyhem</Authors>
     <Description>Microsoft.Extensions.Logging.ILoggerProvider implementation for logging into Luger server</Description>
