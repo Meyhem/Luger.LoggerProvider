@@ -50,6 +50,7 @@ namespace Luger.LoggerProvider
 
         private async Task BatchPostingBackgroundTask(CancellationToken cancellationToken)
         {
+            var postUrl = $"/api/collect/{config.Bucket}";
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
@@ -67,20 +68,19 @@ namespace Luger.LoggerProvider
                     }
 
                     if (!logs.Any()) return;
-
                     await httpClient.PostAsync(
-                        $"/api/collect/{config.Bucket}",
+                        postUrl,
                         JsonContent.Create(logs),
                         cancellationToken
                     );
                 }
-                catch (Exception ex) when (ex is not OperationCanceledException)
+                catch (Exception ex)
                 {
-                    // silencing exception ?
+                    if (ex is OperationCanceledException) break;
+                    
+                    Console.WriteLine("Failed to batch post logs to {0}: {1}", postUrl, ex.Message);
                 }
             }
         }
-
-
     }
 }

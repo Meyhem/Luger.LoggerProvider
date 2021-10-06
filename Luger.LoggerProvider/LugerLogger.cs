@@ -35,8 +35,13 @@ namespace Luger.LoggerProvider
 
         public bool IsEnabled(LogLevel logLevel) => true;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
-            Func<TState, Exception, string> formatter)
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception, string> formatter
+        )
         {
             IEnumerable<object> allLabels = scopes;
             if (state is not null)
@@ -52,7 +57,15 @@ namespace Luger.LoggerProvider
 
             if (exception is not null)
             {
-                postableLabels["@exception"] = JsonSerializer.Serialize(MapException(exception));
+                postableLabels["@exception"] = JsonSerializer.Serialize(
+                    MapException(exception),
+                    new JsonSerializerOptions
+                    {
+                        WriteIndented = false,
+                        IgnoreNullValues = true,
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    }
+                );
             }
 
             if (!string.IsNullOrEmpty(category)) postableLabels["@category"] = category;

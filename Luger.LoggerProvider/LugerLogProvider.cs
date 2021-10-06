@@ -36,8 +36,8 @@ namespace Luger.LoggerProvider
 
         public void Dispose()
         {
-            clientHandler.Dispose();
             batchPoster.Dispose();
+            clientHandler.Dispose();
         }
     }
 }
