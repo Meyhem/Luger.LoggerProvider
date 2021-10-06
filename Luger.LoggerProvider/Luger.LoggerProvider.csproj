@@ -3,13 +3,13 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <PackageVersion>0.0.5</PackageVersion>
+    <PackageVersion>0.0.6</PackageVersion>
     <Title>Luger.LoggerProvider</Title>
     <Authors>Meyhem</Authors>
     <Description>Microsoft.Extensions.Logging.ILoggerProvider implementation for logging into Luger server</Description>
     <Copyright>Meyhem</Copyright>
     <PackageProjectUrl>https://github.com/Meyhem/Luger.LoggerProvider</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/Meyhem/Luger.LoggerProvider/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/Meyhem/Luger.LoggerProvider</RepositoryUrl>
     <RepositoryType>GIT</RepositoryType>
     <PackageTags>luger log provider</PackageTags>
